@@ -1,5 +1,7 @@
 @setlocal enableDelayedExpansion
 @echo off
+@REM Set codepage to UTF-8(65001)
+@call "%~dp0\utils\utils.bat" :func_ensureACP 65001 --nametip "UTF-8" --default-silent
 @REM -----divider-----
 
 @REM Settings
@@ -12,6 +14,7 @@ set picture_ext=.jpg
 @REM default output directories 
 set output_preview_dir_default=%cd%\Preview\
 set output_dir_default=%cd%\Extracted\
+set output_db_extract_record_dir_default=%cd%\db\extract_record\
 
 @REM work_mode can take values from list: [preview, extract]
 set work_mode_default=preview
@@ -259,10 +262,13 @@ goto:eof
 :main_of_extract_mode
     echo Work in Extract Mode
 
-    set tmp_robocopy_cmd=robocopy "!read_dir!." "!output_dir!." /LEV:1 /XD * /XJD
+    set tmp_robocopy_cmd=robocopy "!read_dir!." "!output_dir!." /LEV:1 /XD * /XJD /LOG:robo.log /TEE /NJH /NJS /FP
     if "%flag_dry_run%" == "true" (
         set tmp_robocopy_cmd=%tmp_robocopy_cmd% /L
         !tmp_robocopy_cmd!
+    ) else (
+        @REM execute case params appending
+        @REM set tmp_robocopy_cmd=%tmp_robocopy_cmd% /UNILOG:robo.log /TEE /NJH /NJS /FP
     )
     %dry_exec1% %tmp_robocopy_cmd%
     set tmp_robocopy_cmd=
